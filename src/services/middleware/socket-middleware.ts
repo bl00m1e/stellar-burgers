@@ -1,6 +1,5 @@
 import { Middleware } from '@reduxjs/toolkit';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TWsActionTypes = {
   connect: any;
   disconnect: any;
@@ -10,10 +9,9 @@ type TWsActionTypes = {
   onMessage: any;
 };
 
-// Универсальный middleware — тип экшенов заранее неизвестен,
-// поэтому здесь осознанно используется any (фабрика для разных сокетов).
-export const socketMiddleware = (wsActions: TWsActionTypes): Middleware => {
-  return (store) => {
+export const socketMiddleware =
+  (wsActions: TWsActionTypes): Middleware =>
+  (store) => {
     let socket: WebSocket | null = null;
 
     return (next) => (action: any) => {
@@ -22,10 +20,12 @@ export const socketMiddleware = (wsActions: TWsActionTypes): Middleware => {
         wsActions;
 
       if (connect.match(action)) {
-        socket = new WebSocket(action.payload);
-      }
+        if (socket) {
+          socket.close();
+        }
 
-      if (socket) {
+        socket = new WebSocket(action.payload);
+
         socket.onopen = () => {
           dispatch(onOpen());
         };
@@ -56,4 +56,3 @@ export const socketMiddleware = (wsActions: TWsActionTypes): Middleware => {
       next(action);
     };
   };
-};

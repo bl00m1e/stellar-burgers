@@ -2,23 +2,23 @@ import { ProfileOrdersUI } from '@ui-pages';
 import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
 import {
-  selectUserOrders,
-  wsUserOrdersConnect,
-  wsUserOrdersDisconnect
+  fetchUserOrders,
+  selectUserOrders
 } from '../../services/slices/user-orders-slice';
-import { getUserOrdersWsUrl } from '../../utils/ws-url';
-import { getCookie } from '../../utils/cookie';
+
+const POLL_INTERVAL = 3000;
 
 export const ProfileOrders: FC = () => {
   const dispatch = useDispatch();
   const orders = useSelector(selectUserOrders);
 
   useEffect(() => {
-    const accessToken = (getCookie('accessToken') || '').replace('Bearer ', '');
-    dispatch(wsUserOrdersConnect(getUserOrdersWsUrl(accessToken)));
-    return () => {
-      dispatch(wsUserOrdersDisconnect());
-    };
+    dispatch(fetchUserOrders());
+    const intervalId = setInterval(() => {
+      dispatch(fetchUserOrders());
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(intervalId);
   }, [dispatch]);
 
   return <ProfileOrdersUI orders={orders} />;

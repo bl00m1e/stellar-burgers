@@ -6,7 +6,8 @@ import { TIngredient } from '@utils-types';
 import { useDispatch, useSelector } from '../../services/store';
 import {
   fetchOrderByNumber,
-  selectOrderByNumber
+  selectOrderByNumber,
+  selectOrderByNumberNotFound
 } from '../../services/slices/order-by-number-slice';
 import { selectIngredients } from '../../services/slices/ingredients-slice';
 
@@ -16,6 +17,7 @@ export const OrderInfo: FC = () => {
 
   const orderData = useSelector(selectOrderByNumber);
   const ingredients = useSelector(selectIngredients);
+  const notFound = useSelector(selectOrderByNumberNotFound);
 
   useEffect(() => {
     if (number) {
@@ -54,6 +56,14 @@ export const OrderInfo: FC = () => {
 
     return { ...orderData, ingredientsInfo, date, total };
   }, [orderData, ingredients]);
+
+  if (notFound) {
+    return (
+      <p className='text text_type_main-medium pt-10 pb-10 pl-5 pr-5'>
+        Заказ не найден
+      </p>
+    );
+  }
 
   if (!orderInfo) {
     return <Preloader />;

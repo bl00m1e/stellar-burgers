@@ -1,61 +1,40 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
+import { getOrdersApi } from '@api';
 import { TOrder } from '@utils-types';
 
 type TUserOrdersState = {
   orders: TOrder[];
-  isConnected: boolean;
-  error: string | null;
+  isLoading: boolean;
 };
 
 const initialState: TUserOrdersState = {
   orders: [],
-  isConnected: false,
-  error: null
+  isLoading: false
 };
 
-type TUserOrdersWsMessage = {
-  success: boolean;
-  orders: TOrder[];
-};
+export const fetchUserOrders = createAsyncThunk('userOrders/fetch', async () =>
+  getOrdersApi()
+);
 
 const userOrdersSlice = createSlice({
   name: 'userOrders',
   initialState,
-  reducers: {
-    wsUserOrdersConnect: (state, _action: PayloadAction<string>) => {
-      state.error = null;
-    },
-    wsUserOrdersDisconnect: (state) => {
-      state.isConnected = false;
-    },
-    wsUserOrdersOpen: (state) => {
-      state.isConnected = true;
-      state.error = null;
-    },
-    wsUserOrdersClose: (state) => {
-      state.isConnected = false;
-    },
-    wsUserOrdersError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-    },
-    wsUserOrdersMessage: (
-      state,
-      action: PayloadAction<TUserOrdersWsMessage>
-    ) => {
-      state.orders = action.payload.orders;
-    }
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchUserOrders.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(fetchUserOrders.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.orders = action.payload;
+      })
+      .addCase(fetchUserOrders.rejected, (state) => {
+        state.isLoading = false;
+      });
   }
 });
-
-export const {
-  wsUserOrdersConnect,
-  wsUserOrdersDisconnect,
-  wsUserOrdersOpen,
-  wsUserOrdersClose,
-  wsUserOrdersError,
-  wsUserOrdersMessage
-} = userOrdersSlice.actions;
 
 export const selectUserOrders = (state: RootState) => state.userOrders.orders;
 

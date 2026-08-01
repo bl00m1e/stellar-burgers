@@ -16,14 +16,18 @@ type TUserState = {
   user: TUser | null;
   isAuthChecked: boolean;
   isLoading: boolean;
-  error: string | null;
+  loginError: string | null;
+  registerError: string | null;
+  updateError: string | null;
 };
 
 const initialState: TUserState = {
   user: null,
   isAuthChecked: false,
   isLoading: false,
-  error: null
+  loginError: null,
+  registerError: null,
+  updateError: null
 };
 
 const saveTokens = (accessToken: string, refreshToken: string) => {
@@ -76,7 +80,7 @@ const userSlice = createSlice({
     builder
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
-        state.error = null;
+        state.registerError = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -85,11 +89,11 @@ const userSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message ?? 'Ошибка регистрации';
+        state.registerError = action.error.message ?? 'Ошибка регистрации';
       })
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
-        state.error = null;
+        state.loginError = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -98,7 +102,7 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message ?? 'Неверный логин или пароль';
+        state.loginError = action.error.message ?? 'Неверный логин или пароль';
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
@@ -117,9 +121,10 @@ const userSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.updateError = null;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.error = action.error.message ?? 'Ошибка обновления профиля';
+        state.updateError = action.error.message ?? 'Ошибка обновления профиля';
       });
   }
 });
@@ -127,6 +132,9 @@ const userSlice = createSlice({
 export const selectUser = (state: RootState) => state.user.user;
 export const selectIsAuthChecked = (state: RootState) =>
   state.user.isAuthChecked;
-export const selectUserError = (state: RootState) => state.user.error;
+export const selectLoginError = (state: RootState) => state.user.loginError;
+export const selectRegisterError = (state: RootState) =>
+  state.user.registerError;
+export const selectUpdateError = (state: RootState) => state.user.updateError;
 
 export default userSlice.reducer;

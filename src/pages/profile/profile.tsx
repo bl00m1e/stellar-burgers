@@ -3,14 +3,14 @@ import { FC, SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
 import {
   selectUser,
-  selectUserError,
+  selectUpdateError,
   updateUser
 } from '../../services/slices/user-slice';
 
 export const Profile: FC = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const error = useSelector(selectUserError);
+  const error = useSelector(selectUpdateError);
 
   const [formValue, setFormValue] = useState({
     name: user?.name || '',

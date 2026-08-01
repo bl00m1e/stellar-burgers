@@ -17,14 +17,7 @@ import feedReducer, {
   wsFeedMessage,
   wsFeedOpen
 } from './slices/feed-slice';
-import userOrdersReducer, {
-  wsUserOrdersClose,
-  wsUserOrdersConnect,
-  wsUserOrdersDisconnect,
-  wsUserOrdersError,
-  wsUserOrdersMessage,
-  wsUserOrdersOpen
-} from './slices/user-orders-slice';
+import userOrdersReducer from './slices/user-orders-slice';
 import userReducer from './slices/user-slice';
 
 import { socketMiddleware } from './middleware/socket-middleware';
@@ -36,15 +29,6 @@ const feedSocketMiddleware = socketMiddleware({
   onClose: wsFeedClose,
   onError: wsFeedError,
   onMessage: wsFeedMessage
-});
-
-const userOrdersSocketMiddleware = socketMiddleware({
-  connect: wsUserOrdersConnect,
-  disconnect: wsUserOrdersDisconnect,
-  onOpen: wsUserOrdersOpen,
-  onClose: wsUserOrdersClose,
-  onError: wsUserOrdersError,
-  onMessage: wsUserOrdersMessage
 });
 
 const rootReducer = {
@@ -60,10 +44,7 @@ const rootReducer = {
 const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
-      feedSocketMiddleware,
-      userOrdersSocketMiddleware
-    ),
+    getDefaultMiddleware().concat(feedSocketMiddleware),
   devTools: process.env.NODE_ENV !== 'production'
 });
 
