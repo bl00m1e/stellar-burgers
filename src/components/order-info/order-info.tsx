@@ -1,23 +1,30 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useDispatch, useSelector } from '../../services/store';
+import {
+  fetchOrderByNumber,
+  selectOrderByNumber,
+  selectOrderByNumberNotFound
+} from '../../services/slices/order-by-number-slice';
+import { selectIngredients } from '../../services/slices/ingredients-slice';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams<{ number: string }>();
+  const dispatch = useDispatch();
 
-  const ingredients: TIngredient[] = [];
+  const orderData = useSelector(selectOrderByNumber);
+  const ingredients = useSelector(selectIngredients);
+  const notFound = useSelector(selectOrderByNumberNotFound);
 
-  /* Готовим данные для отображения */
+  useEffect(() => {
+    if (number) {
+      dispatch(fetchOrderByNumber(Number(number)));
+    }
+  }, [dispatch, number]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -32,15 +39,11 @@ export const OrderInfo: FC = () => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
           if (ingredient) {
-            acc[item] = {
-              ...ingredient,
-              count: 1
-            };
+            acc[item] = { ...ingredient, count: 1 };
           }
         } else {
           acc[item].count++;
         }
-
         return acc;
       },
       {}
@@ -51,13 +54,16 @@ export const OrderInfo: FC = () => {
       0
     );
 
-    return {
-      ...orderData,
-      ingredientsInfo,
-      date,
-      total
-    };
+    return { ...orderData, ingredientsInfo, date, total };
   }, [orderData, ingredients]);
+
+  if (notFound) {
+    return (
+      <p className='text text_type_main-medium pt-10 pb-10 pl-5 pr-5'>
+        Заказ не найден
+      </p>
+    );
+  }
 
   if (!orderInfo) {
     return <Preloader />;
